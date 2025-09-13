@@ -9,16 +9,25 @@
 ## 機能
 
 - 📊 学校給食メニューの表示
+- 📄 複数形式の給食メニュー文書の読み込み対応
+  - JSON形式ファイル
+  - テキスト抽出可能なPDF
+  - 画像形式のPDF (OCR処理)
+  - スマホで撮影した画像ファイル (OCR処理)
 - 🍳 給食内容に基づく朝食・夕食メニューの提案
 - 🥗 栄養バランスを考慮した補完的なメニュー推奨
 - 🌐 ウェブインターフェースでの簡単操作
 - 📱 レスポンシブデザイン対応
 
-## 技術スタック
+**技術スタック**
 
 - **Backend**: Go (Golang)
 - **Frontend**: HTML, CSS, JavaScript
-- **Data**: JSON形式での給食データ管理
+- **Data**: 複数形式の給食データ管理
+  - JSON形式 (直接処理)
+  - PDF文書 (テキスト抽出・OCR処理)
+  - 画像ファイル (OCR処理)
+- **Document Processing**: 文書アップロード・自動処理システム
 
 ## 使用方法
 
@@ -40,7 +49,16 @@ go run cmd/main.go
 
 ブラウザで `http://localhost:8080` にアクセス
 
-### 3. API使用例
+### 3. 文書アップロード機能
+
+ウェブインターフェースから給食メニューの文書をアップロードできます：
+
+1. ブラウザで `http://localhost:8080` にアクセス
+2. 「給食メニュー文書のアップロード」セクションで文書を選択
+3. 対応形式: PDF、JPG、PNG、JSON
+4. アップロード後、自動的にメニューデータが追加されます
+
+### 4. API使用例
 
 ```bash
 # 全ての給食メニューを取得
@@ -51,6 +69,9 @@ curl "http://localhost:8080/api/suggest?date=2025-01-13&meal_type=breakfast"
 
 # 特定日の夕食メニュー提案を取得
 curl "http://localhost:8080/api/suggest?date=2025-01-13&meal_type=dinner"
+
+# 文書をアップロード
+curl -X POST -F "document=@menu.json" http://localhost:8080/api/upload
 ```
 
 ## APIエンドポイント
@@ -58,23 +79,27 @@ curl "http://localhost:8080/api/suggest?date=2025-01-13&meal_type=dinner"
 - `GET /` - メインのウェブインターフェース
 - `GET /api/school-lunches` - 学校給食データの取得
 - `GET /api/suggest?date=YYYY-MM-DD&meal_type=breakfast|dinner` - メニュー提案
+- `POST /api/upload` - 給食メニュー文書のアップロード
 
 ## プロジェクト構造
 
 ```
 menu-advisor/
 ├── cmd/
-│   └── main.go              # メインアプリケーション
+│   └── main.go                    # メインアプリケーション
 ├── internal/
 │   ├── models/
-│   │   └── menu.go          # データモデル
+│   │   ├── menu.go               # メニューデータモデル
+│   │   └── document.go           # 文書処理モデル
 │   ├── service/
-│   │   ├── menu_advisor.go  # メニュー提案ロジック
-│   │   └── menu_advisor_test.go # テスト
+│   │   ├── menu_advisor.go       # メニュー提案ロジック
+│   │   ├── menu_advisor_test.go  # メニューテスト
+│   │   ├── document_processor.go # 文書処理ロジック
+│   │   └── document_processor_test.go # 文書処理テスト
 │   └── web/
-│       └── handlers.go      # HTTPハンドラー
+│       └── handlers.go           # HTTPハンドラー
 ├── data/
-│   └── school_lunch_sample.json # サンプル給食データ
+│   └── school_lunch_sample.json  # サンプル給食データ
 ├── go.mod
 └── README.md
 ```
