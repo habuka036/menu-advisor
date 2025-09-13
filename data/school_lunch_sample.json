@@ -1,0 +1,77 @@
+[
+  {
+    "date": "2025-01-13T00:00:00Z",
+    "main_dish": "鶏肉の照り焼き",
+    "side_dishes": ["野菜炒め", "白米"],
+    "soup": "味噌汁（わかめ）",
+    "nutrition": {
+      "calories": 650,
+      "protein_g": 28.5,
+      "carbs_g": 85.2,
+      "fat_g": 18.3,
+      "fiber_g": 4.2,
+      "sodium_mg": 850,
+      "vegetables_servings": 2
+    }
+  },
+  {
+    "date": "2025-01-14T00:00:00Z",
+    "main_dish": "魚のフライ",
+    "side_dishes": ["ひじきの煮物", "白米"],
+    "soup": "野菜スープ",
+    "nutrition": {
+      "calories": 680,
+      "protein_g": 26.8,
+      "carbs_g": 78.5,
+      "fat_g": 22.1,
+      "fiber_g": 5.8,
+      "sodium_mg": 920,
+      "vegetables_servings": 3
+    }
+  },
+  {
+    "date": "2025-01-15T00:00:00Z",
+    "main_dish": "豚肉の生姜焼き",
+    "side_dishes": ["小松菜のごま和え", "白米"],
+    "soup": "けんちん汁",
+    "nutrition": {
+      "calories": 720,
+      "protein_g": 32.1,
+      "carbs_g": 82.3,
+      "fat_g": 25.4,
+      "fiber_g": 6.1,
+      "sodium_mg": 980,
+      "vegetables_servings": 4
+    }
+  },
+  {
+    "date": "2025-01-16T00:00:00Z",
+    "main_dish": "カレーライス",
+    "side_dishes": ["福神漬け", "フルーツサラダ"],
+    "soup": "",
+    "nutrition": {
+      "calories": 750,
+      "protein_g": 22.5,
+      "carbs_g": 95.8,
+      "fat_g": 28.2,
+      "fiber_g": 3.8,
+      "sodium_mg": 1100,
+      "vegetables_servings": 2
+    }
+  },
+  {
+    "date": "2025-01-17T00:00:00Z",
+    "main_dish": "焼き魚（さば）",
+    "side_dishes": ["切り干し大根", "白米"],
+    "soup": "味噌汁（豆腐）",
+    "nutrition": {
+      "calories": 620,
+      "protein_g": 30.2,
+      "carbs_g": 72.5,
+      "fat_g": 19.8,
+      "fiber_g": 5.5,
+      "sodium_mg": 880,
+      "vegetables_servings": 3
+    }
+  }
+]
