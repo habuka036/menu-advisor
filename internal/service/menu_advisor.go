@@ -170,3 +170,25 @@ func (s *MenuAdvisorService) initializeHomeMenuDatabase() {
 func (s *MenuAdvisorService) GetAllSchoolLunches() []models.SchoolLunchMenu {
 	return s.schoolLunches
 }
+
+// AddSchoolLunchMenu adds a new school lunch menu to the service
+func (s *MenuAdvisorService) AddSchoolLunchMenu(menu models.SchoolLunchMenu) {
+	// Check if menu for this date already exists and update it
+	dateStr := menu.Date.Format("2006-01-02")
+	for i, existingMenu := range s.schoolLunches {
+		if existingMenu.Date.Format("2006-01-02") == dateStr {
+			s.schoolLunches[i] = menu
+			return
+		}
+	}
+	
+	// Add new menu if not found
+	s.schoolLunches = append(s.schoolLunches, menu)
+}
+
+// AddSchoolLunchMenus adds multiple school lunch menus to the service
+func (s *MenuAdvisorService) AddSchoolLunchMenus(menus []models.SchoolLunchMenu) {
+	for _, menu := range menus {
+		s.AddSchoolLunchMenu(menu)
+	}
+}

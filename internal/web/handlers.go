@@ -7,13 +7,15 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/habuka036/menu-advisor/internal/models"
 	"github.com/habuka036/menu-advisor/internal/service"
 )
 
 // Handler manages HTTP requests
 type Handler struct {
-	menuService *service.MenuAdvisorService
-	templates   *template.Template
+	menuService       *service.MenuAdvisorService
+	documentProcessor *service.DocumentProcessor
+	templates         *template.Template
 }
 
 // NewHandler creates a new HTTP handler
@@ -26,8 +28,9 @@ func NewHandler(menuService *service.MenuAdvisorService) *Handler {
 	}
 
 	return &Handler{
-		menuService: menuService,
-		templates:   tmpl,
+		menuService:       menuService,
+		documentProcessor: service.NewDocumentProcessor(menuService),
+		templates:         tmpl,
 	}
 }
 
@@ -91,6 +94,16 @@ func (h *Handler) HomeHandler(w http.ResponseWriter, r *http.Request) {
         </div>
         
         <div class="form-section">
+            <h2>給食メニュー文書のアップロード</h2>
+            <p>PDF、画像ファイル、JSONファイルから給食メニューを読み込むことができます。</p>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="document" name="document" accept=".pdf,.jpg,.jpeg,.png,.json" required>
+                <button type="submit">文書をアップロード</button>
+            </form>
+            <div id="uploadResult"></div>
+        </div>
+        
+        <div class="form-section">
             <h2>家庭メニュー提案</h2>
             <p>日付と食事タイプを選択して、おすすめメニューを取得してください。</p>
             <form id="menuForm">
@@ -107,6 +120,64 @@ func (h *Handler) HomeHandler(w http.ResponseWriter, r *http.Request) {
     </div>
 
     <script>
+        // Handle document upload form
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('document');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('ファイルを選択してください');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('document', file);
+            
+            try {
+                document.getElementById('uploadResult').innerHTML = '<p>アップロード中...</p>';
+                
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('uploadResult').innerHTML = ` + "`" + `
+                        <div class="suggestion">
+                            <h3>✅ アップロード成功</h3>
+                            <p>${data.message}</p>
+                            <p><small>文書ID: ${data.result.id}</small></p>
+                            <p><small>処理状況: ${data.result.status}</small></p>
+                        </div>
+                    ` + "`" + `;
+                    
+                    // Reload the page to show new menu data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    document.getElementById('uploadResult').innerHTML = ` + "`" + `
+                        <div style="color: red; background: #ffebee; padding: 10px; border-radius: 5px;">
+                            <h3>❌ アップロードエラー</h3>
+                            <p>${data.error}</p>
+                        </div>
+                    ` + "`" + `;
+                }
+            } catch (error) {
+                document.getElementById('uploadResult').innerHTML = ` + "`" + `
+                    <div style="color: red; background: #ffebee; padding: 10px; border-radius: 5px;">
+                        <h3>❌ エラー</h3>
+                        <p>アップロードに失敗しました: ${error.message}</p>
+                    </div>
+                ` + "`" + `;
+            }
+        });
+
+        // Handle menu suggestion form
         document.getElementById('menuForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const date = document.getElementById('date').value;
@@ -208,4 +279,55 @@ func joinSlice(slice []string) string {
 		result += item
 	}
 	return result
+}
+
+// UploadHandler handles document uploads
+func (h *Handler) UploadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse multipart form
+	err := r.ParseMultipartForm(32 << 20) // 32MB max
+	if err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	// Get uploaded file
+	file, header, err := r.FormFile("document")
+	if err != nil {
+		http.Error(w, "Failed to get uploaded file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Create processing request
+	req := &models.DocumentProcessingRequest{
+		File:   file,
+		Header: header,
+	}
+
+	// Process document
+	result, err := h.documentProcessor.ProcessDocument(req)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   err.Error(),
+			"result":  result,
+		})
+		return
+	}
+
+	// Return success response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Document processed successfully",
+		"result":  result,
+	})
 }

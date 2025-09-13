@@ -30,6 +30,7 @@ func main() {
 	http.HandleFunc("/", handler.HomeHandler)
 	http.HandleFunc("/api/suggest", handler.SuggestHandler)
 	http.HandleFunc("/api/school-lunches", handler.SchoolLunchHandler)
+	http.HandleFunc("/api/upload", handler.UploadHandler)
 
 	// Serve static files if they exist
 	staticDir := "web/static"
